@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Firestore Data Copier</title>
   <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
-
-
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <h1>Firestore Database Copier</h1>
@@ -15,8 +13,8 @@
   <div id="status"></div>
 
   <script>
-    // Source Firebase project configuration
-    const sourceConfig = {
+
+const sourceConfig = {
     apiKey: "AIzaSyD4luqKnpoQvBGB4f6BuvwUAzTXqXQrnpI",
   authDomain: "superstarw-3ddc6.firebaseapp.com",
   databaseURL: "https://superstarw-3ddc6-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -36,6 +34,8 @@
   appId: "1:39651467700:web:05392de9285dfcf72d12e1"
     };
 
+
+
     // Initialize source and target Firebase apps
     const sourceApp = firebase.initializeApp(sourceConfig, "sourceApp");
     const targetApp = firebase.initializeApp(targetConfig, "targetApp");
@@ -43,23 +43,24 @@
     const sourceFirestore = firebase.firestore(sourceApp);
     const targetFirestore = firebase.firestore(targetApp);
 
+    // Manually specify the collections to copy
+    const collectionsToCopy = ["wordlist", "examList"]; // Replace with your collection names
+
     // Copy Firestore data
     async function copyFirestoreData() {
       const status = document.getElementById("status");
       status.textContent = "Copying data...";
       
       try {
-        // Get all collections from source Firestore
-        const collections = await sourceFirestore.listCollections();
-        
-        for (const collection of collections) {
-          const snapshot = await collection.get();
+        for (const collectionName of collectionsToCopy) {
+          const collectionRef = sourceFirestore.collection(collectionName);
+          const snapshot = await collectionRef.get();
           
           for (const doc of snapshot.docs) {
             const data = doc.data();
 
             // Write to target Firestore
-            await targetFirestore.collection(collection.id).doc(doc.id).set(data);
+            await targetFirestore.collection(collectionName).doc(doc.id).set(data);
           }
         }
 
@@ -74,3 +75,4 @@
   </script>
 </body>
 </html>
+
