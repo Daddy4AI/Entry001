@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firestore Data Copier</title>
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js"></script>
+</head>
+<body>
+  <h1>Firestore Database Copier</h1>
+  <button id="copyButton">Copy Firestore Data</button>
+  <div id="status"></div>
+
+  <script>
+    // Source Firebase project configuration
+    const sourceConfig = {
+    apiKey: "AIzaSyD4luqKnpoQvBGB4f6BuvwUAzTXqXQrnpI",
+  authDomain: "superstarw-3ddc6.firebaseapp.com",
+  databaseURL: "https://superstarw-3ddc6-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "superstarw-3ddc6",
+  storageBucket: "superstarw-3ddc6.firebasestorage.app",
+  messagingSenderId: "11393876466",
+  appId: "1:11393876466:web:667884c8ea24c95794ab6b",
+    };
+
+    // Target Firebase project configuration
+    const targetConfig = {
+        apiKey: "AIzaSyAE5OL3jOqHrXz4VRlN-Im3sDyiMJq2PG0",
+  authDomain: "entry001.firebaseapp.com",
+  projectId: "entry001",
+  storageBucket: "entry001.firebasestorage.app",
+  messagingSenderId: "39651467700",
+  appId: "1:39651467700:web:05392de9285dfcf72d12e1"
+    };
+
+    // Initialize source and target Firebase apps
+    const sourceApp = firebase.initializeApp(sourceConfig, "sourceApp");
+    const targetApp = firebase.initializeApp(targetConfig, "targetApp");
+
+    const sourceFirestore = firebase.firestore(sourceApp);
+    const targetFirestore = firebase.firestore(targetApp);
+
+    // Copy Firestore data
+    async function copyFirestoreData() {
+      const status = document.getElementById("status");
+      status.textContent = "Copying data...";
+      
+      try {
+        // Get all collections from source Firestore
+        const collections = await sourceFirestore.listCollections();
+        
+        for (const collection of collections) {
+          const snapshot = await collection.get();
+          
+          for (const doc of snapshot.docs) {
+            const data = doc.data();
+
+            // Write to target Firestore
+            await targetFirestore.collection(collection.id).doc(doc.id).set(data);
+          }
+        }
+
+        status.textContent = "Data copied successfully!";
+      } catch (error) {
+        console.error("Error copying data:", error);
+        status.textContent = `Error: ${error.message}`;
+      }
+    }
+
+    document.getElementById("copyButton").addEventListener("click", copyFirestoreData);
+  </script>
+</body>
+</html>
