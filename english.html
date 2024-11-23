@@ -263,10 +263,9 @@
                 document.getElementById('wordListContainer').innerHTML = tableHtml;
 
                 // 记录表格加载时间
-                const now = new Date();
-                const hongKongTime = now.toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
-                localStorage.setItem('examTimeInitial', hongKongTime);
-                console.log('Table loaded. Time recorded as:', hongKongTime);
+                const examTimeInitial = new Date().toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
+                localStorage.setItem('examTimeInitial', examTimeInitial);
+                console.log('Table loaded. Time recorded as:', examTimeInitial);
 
 
             } else {
