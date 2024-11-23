@@ -37,8 +37,8 @@
         }
         /* Set column widths */
         .column1 { width: 30%; }
-        .column2 { width: 20%; }
-        .column3 { width: 20%; }
+        .column2 { width: 15%; }
+        .column3 { width: 25%; }
         .column4 { width: 30%; }
 
         footer {
@@ -61,7 +61,7 @@
 
     <div id="wordListContainer"></div>
 
-    <footer>version 004</footer>
+    <footer>version 005</footer>
 
     <script type="module">
         import { db } from './enfirebaseConfig.js';
@@ -237,6 +237,9 @@
             }
         }
 
+        // Attach the function to the global window object
+        window.playPronunciation = playPronunciation;
+
         function displayWords(wordList) {
             if (wordList.length > 0) {
                 let tableHtml = `<table>
@@ -259,7 +262,6 @@
                 tableHtml += "</table>";
                 document.getElementById('wordListContainer').innerHTML = tableHtml;
 
-                
                 // 记录表格加载时间
                 const now = new Date();
                 const hongKongTime = now.toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
@@ -267,8 +269,6 @@
                 console.log('Table loaded. Time recorded as:', hongKongTime);
 
 
-
-            
             } else {
                 document.getElementById('wordListContainer').innerHTML = "今天没有需要复习的单词。";
             }
