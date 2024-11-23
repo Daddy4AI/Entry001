@@ -68,8 +68,10 @@
 
         const maxWordN = parseInt(localStorage.getItem('maxWordN'), 10);
         const todayExamId = parseInt(localStorage.getItem('todayExamId'), 10);
+        const examTimeInitial = parseInt(localStorage.getItem('examTimeInitial'), 10);
         console.log('maxWordN retrieved:', maxWordN);
         console.log('todayExamId retrieved:', todayExamId);
+        console.log('examTimeInitial retrieved:', examTimeInitial);
 
         let todayTestList = [];
         let currentWordIndex = 0;
@@ -87,6 +89,7 @@
                 examData.examList = {
                     id: todayExamId,
                     exam_id: todayExamId,
+                    exam_time_initial: examTimeInitial,
                     exam_time_start: examTimeStart,
                     exam_time_end: null
                 };
