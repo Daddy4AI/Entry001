@@ -115,10 +115,10 @@
                     <th>测试日期</th>
                     <th>单词总数</th>
                     <th>正确率</th>
-                    <th>总测试时间</th>
-                    <th>平均每个单词测试时间</th>
-                    <th>总预习测试时间</th>
-                    <th>平均每个单词时间</th>
+                    <th>纯测试时间(秒)</th>
+                    <th>平均单词时间(秒)</th>
+                    <th>总预习测试时间(秒)</th>
+                    <th>平均单词时间(秒)</th>
                 </tr>
             </thead>
             <tbody id="examStatisticsTable">
@@ -237,10 +237,10 @@
                     <td>${examDate}</td>
                     <td>${totalTestedWords}</td>
                     <td>${accuracy}%</td>
-                    <td>${examDuration} 秒</td>
-                    <td>${avgTimePerWord} 秒</td>
-                    <td>${examReviewDuration} 秒</td>
-                    <td>${avgTimeReviewPerWord} 秒</td>
+                    <td>${examDuration}</td>
+                    <td>${avgTimePerWord}</td>
+                    <td>${examReviewDuration}</td>
+                    <td>${avgTimeReviewPerWord}</td>
                 `;
                 examStatisticsTable.appendChild(row);
             }
