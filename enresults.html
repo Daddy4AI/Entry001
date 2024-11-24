@@ -136,8 +136,6 @@
         import { getDoc, doc, getDocs, collection } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
         
         let todayExamId = parseInt(localStorage.getItem('todayExamId'), 10);
-        
-        const lastExamId = Math.max(...Object.values(testResults).map(r => r.last_exam_id || 0)) ;
         let todayTestList = JSON.parse(localStorage.getItem("todayWordList")) || [];
 
         async function loadTestResults() {
