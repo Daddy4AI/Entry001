@@ -139,107 +139,69 @@
         import { db } from './enfirebaseConfig.js';
         import { getDoc, doc, getDocs, collection } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
 
-        let todayExamId = parseInt(localStorage.getItem('todayExamId'), 10);
-        let todayTestList = JSON.parse(localStorage.getItem("todayWordList")) || [];
+        let todayExamId;
 
-document.addEventListener('DOMContentLoaded', async () => {
-    await populateExamSelector(); // 添加考试选择器
-    await loadTestResults();      // 加载测试结果
-});
+        // 加载考试选择器
+        async function populateExamSelector() {
+            try {
+                const examSnapshot = await getDocs(collection(db, 'examList'));
+                const exams = examSnapshot.docs.map(doc => doc.data());
+                const sortedExams = exams.sort((a, b) => b.exam_id - a.exam_id);
 
-async function populateExamSelector() {
-    try {
-        const examSnapshot = await getDocs(collection(db, 'examList'));
-        const exams = examSnapshot.docs.map(doc => doc.data());
-        const sortedExams = exams.sort((a, b) => b.exam_id - a.exam_id); // 按exam_id降序排序
+                const examSelector = document.getElementById('examSelector');
+                examSelector.innerHTML = '';
 
-        const examSelector = document.getElementById('examSelector');
-        examSelector.innerHTML = ''; // 清空现有内容
-
-        sortedExams.forEach(exam => {
-            const option = document.createElement('option');
-            option.value = exam.exam_id;
-            option.textContent = `Exam ${exam.exam_id}`;
-            examSelector.appendChild(option);
-        });
-
-        // 默认选择最大的examId
-        examSelector.value = sortedExams[0].exam_id;
-        todayExamId = parseInt(examSelector.value, 10); // 更新默认的 todayExamId
-
-        // 添加选择框事件监听
-        examSelector.addEventListener('change', async (event) => {
-            todayExamId = parseInt(event.target.value, 10);
-            await loadTestResults(); // 根据新的examId重新加载测试结果
-        });
-
-        }
-}
-
-
-async function loadTestResults() {
-    try {
-        // 获取 testResult 数据
-        const testResultSnapshot = await getDocs(collection(db, 'testResult'));
-        const testResults = testResultSnapshot.docs
-            .map(doc => doc.data())
-            .filter(result => result.test_attempts.some(attempt => attempt.exam_id === todayExamId)); // 仅保留匹配的examId
-
-        // 获取单词映射
-        const wordListSnapshot = await getDocs(collection(db, 'wordlist'));
-        const wordMap = wordListSnapshot.docs.reduce((map, doc) => {
-            const data = doc.data();
-            map[data.id] = data.word; // 假设字段 `id` 和 `word`
-            return map;
-        }, {});
-
-        // 清空表格并重新填充数据
-        const testDetailsTable = document.getElementById('testDetailsTable');
-        testDetailsTable.innerHTML = '';
-
-        testResults.forEach(result => {
-            result.test_attempts
-                .filter(attempt => attempt.exam_id === todayExamId)
-                .forEach(attempt => {
-                    const row = document.createElement('tr');
-                    const word = wordMap[result.id] || '未知单词';
-                    row.innerHTML = `
-                        <td>${word}</td>
-                        <td>${attempt.test_result ? '正确' : '错误'}</td>
-                        <td>${result.test_attempts.length}</td>
-                    `;
-                    testDetailsTable.appendChild(row);
+                sortedExams.forEach(exam => {
+                    const option = document.createElement('option');
+                    option.value = exam.exam_id;
+                    option.textContent = `Exam ${exam.exam_id}`;
+                    examSelector.appendChild(option);
                 });
-        });
-    } catch (error) {
-        console.error('加载测试结果时出错:', error);
-    }
-}
 
-                // 加载所有考试的统计数据
-                loadExamStatistics();
+                todayExamId = sortedExams[0].exam_id;
+                examSelector.value = todayExamId;
 
-                // 计算测试总结
-                const totalWords = todayTestList.length;
-                const correctCount = testResults.reduce((count, result) => {
-                    return count + result.test_attempts.filter(attempt => attempt.exam_id === todayExamId && attempt.test_result).length;
-                }, 0);
-                const accuracy = ((correctCount / totalWords) * 100).toFixed(2);
-                const examDuration = examData ? calculateExamDuration(examData.exam_time_start, examData.exam_time_end) : "未知";
-                const averageTimePerWord = examData ? calculateAverageTimePerWord(examData.exam_time_start, examData.exam_time_end, totalWords) : "未知";
+                examSelector.addEventListener('change', async (event) => {
+                    todayExamId = parseInt(event.target.value, 10);
+                    await loadTestResults();
+                    await loadWordStatistics();
+                    await loadExamStatistics();
+                });
+            } catch (error) {
+                console.error('加载考试选择器时出错:', error);
+            }
+        }
 
-                const examReviewDuration = examData ? calculateExamDuration(examData.exam_time_initial, examData.exam_time_end) : "未知";
-                const averageTimeReviewPerWord = examData ? calculateAverageTimePerWord(examData.exam_time_initial, examData.exam_time_end, totalWords) : "未知";
+        // 加载测试结果
+        async function loadTestResults() {
+            try {
+                const testResultSnapshot = await getDocs(collection(db, 'testResult'));
+                const testResults = testResultSnapshot.docs.map(doc => doc.data());
 
-                document.getElementById('testSummaryDetails').innerHTML = `
-                    <p>本次考试是第 ${todayExamId} 次考试，一共复习了 ${totalWords} 个单词，正确率为 ${accuracy}%</p>
-                    <p>考试时间为 ${examDuration} 秒，平均每个单词时间为 ${averageTimePerWord} 秒</p>
-                    <p>整体预习和测试时间为 ${examReviewDuration} 秒，平均每个单词时间为 ${averageTimeReviewPerWord} 秒</p>
-                `;
+                const wordListSnapshot = await getDocs(collection(db, 'wordlist'));
+                const wordMap = wordListSnapshot.docs.reduce((map, doc) => {
+                    const data = doc.data();
+                    map[data.id] = data.word;
+                    return map;
+                }, {});
 
-                const stats = calculateWordStatistics(wordList, testResults, totalWordCount);
-                displayWordStatistics(stats);
+                const testDetailsTable = document.getElementById('testDetailsTable');
+                testDetailsTable.innerHTML = '';
 
+                testResults.forEach(result => {
+                    result.test_attempts
+                        .filter(attempt => attempt.exam_id === todayExamId)
+                        .forEach(attempt => {
+                            const row = document.createElement('tr');
+                            const word = wordMap[result.id] || '未知单词';
+                            row.innerHTML = `
+                                <td>${word}</td>
+                                <td>${attempt.test_result ? '正确' : '错误'}</td>
+                                <td>${result.test_attempts.length}</td>
+                            `;
+                            testDetailsTable.appendChild(row);
+                        });
+                });
             } catch (error) {
                 console.error('加载测试结果时出错:', error);
             }
