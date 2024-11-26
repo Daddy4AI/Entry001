@@ -83,6 +83,11 @@
 </head>
 <body>
     <h1>测试结果</h1>
+    <div id="examSelectorContainer" style="text-align: center; margin-bottom: 20px;">
+        <label for="examSelector">选择考试：</label>
+        <select id="examSelector"></select>
+    </div>
+    
     <h2 class="left-align">本次测试结果</h2>
     <div class="summary" id="testSummary">
         <p id="testSummaryDetails">加载中...</p>
@@ -90,7 +95,6 @@
             <thead>
                 <tr>
                     <th>单词</th>
-                    <th>状态</th>
                     <th>测试结果</th>
                     <th>总测试次数</th>
                 </tr>
