@@ -165,15 +165,26 @@
     }
 });
 
-// 从 Firestore 获取今天的考试 ID
+// 从 Firestore 获取最大的考试 ID
 async function getTodayExamIdFromFirestore() {
-    const examSnapshot = await getDocs(collection(db, 'examList'));
-    const exams = examSnapshot.docs.map(doc => doc.data());
-    const latestExam = exams
-        .filter(exam => exam.exam_id !== 0) // 排除无效考试
-        .sort((a, b) => b.exam_time_start - a.exam_time_start)[0];
-    return latestExam ? latestExam.exam_id : null;
+    try {
+        const examSnapshot = await getDocs(collection(db, 'examList'));
+        
+        // 获取所有考试数据并找到最大的 examId
+        const exams = examSnapshot.docs.map(doc => doc.data());
+        const maxExam = exams
+            .filter(exam => exam.exam_id !== 0) // 排除无效考试
+            .reduce((max, exam) => (exam.exam_id > max ? exam.exam_id : max), 0);
+
+        console.log("最大的 examId:", maxExam);
+        return maxExam;
+    } catch (error) {
+        console.error("从 Firestore 获取最大的 examId 时出错:", error);
+        throw error;
+    }
 }
+
+
 
 // 从 Firestore 获取今天的单词列表
 async function getTodayTestListFromFirestore(examId) {
