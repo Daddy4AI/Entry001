@@ -133,7 +133,7 @@
 
     <button class="back-button" id="back-button">返回首页</button>
 
-    <footer>version 004</footer>
+    <footer>version 001</footer>
 
     <script type="module">
         import { db } from './enfirebaseConfig.js';
@@ -142,7 +142,7 @@
         let todayExamId = parseInt(localStorage.getItem('todayExamId'), 10);
         let todayTestList = JSON.parse(localStorage.getItem("todayWordList")) || [];
 
-        document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
     await populateExamSelector(); // 添加考试选择器
     await loadTestResults();      // 加载测试结果
 });
@@ -153,8 +153,8 @@ async function populateExamSelector() {
         const exams = examSnapshot.docs.map(doc => doc.data());
         const sortedExams = exams.sort((a, b) => b.exam_id - a.exam_id); // 按exam_id降序排序
 
-        const examSelector = document.createElement('select');
-        examSelector.id = 'examSelector';
+        const examSelector = document.getElementById('examSelector');
+        examSelector.innerHTML = ''; // 清空现有内容
 
         sortedExams.forEach(exam => {
             const option = document.createElement('option');
@@ -163,18 +163,20 @@ async function populateExamSelector() {
             examSelector.appendChild(option);
         });
 
-        document.body.insertBefore(examSelector, document.getElementById('testSummary'));
-        examSelector.value = sortedExams[0].exam_id; // 默认选择最大值
+        // 默认选择最大的examId
+        examSelector.value = sortedExams[0].exam_id;
         todayExamId = parseInt(examSelector.value, 10); // 更新默认的 todayExamId
 
+        // 添加选择框事件监听
         examSelector.addEventListener('change', async (event) => {
             todayExamId = parseInt(event.target.value, 10);
-            await loadTestResults(); // 重新加载测试结果
+            await loadTestResults(); // 根据新的examId重新加载测试结果
         });
     } catch (error) {
         console.error('加载考试选择器时出错:', error);
     }
 }
+
 
 async function loadTestResults() {
     try {
