@@ -172,10 +172,12 @@ async function populateExamSelector() {
             todayExamId = parseInt(event.target.value, 10);
             await loadTestResults(); // 根据新的examId重新加载测试结果
         });
-    } catch (error) {
+
+    catch (error) {
         console.error('加载考试选择器时出错:', error);
     }
-
+    }
+}
 
 
 async function loadTestResults() {
