@@ -133,7 +133,7 @@
 
     <button class="back-button" id="back-button">返回首页</button>
 
-    <footer>version 002</footer>
+    <footer>version 003</footer>
 
     <script type="module">
         import { db } from './enfirebaseConfig.js';
@@ -173,9 +173,7 @@ async function populateExamSelector() {
             await loadTestResults(); // 根据新的examId重新加载测试结果
         });
 
-    catch (error) {
-        console.error('加载考试选择器时出错:', error);
-    }
+
     }
 }
 
