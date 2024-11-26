@@ -138,78 +138,51 @@
         let todayExamId = parseInt(localStorage.getItem('todayExamId'), 10);
         let todayTestList = JSON.parse(localStorage.getItem("todayWordList")) || [];
 
-        document.addEventListener('DOMContentLoaded', async () => {
-    await populateExamSelector(); // 添加考试选择器
-    await loadTestResults();      // 加载测试结果
-});
+        async function loadTestResults() {
+            try {
+                console.log("加载测试结果中...");
 
-async function populateExamSelector() {
-    try {
-        const examSnapshot = await getDocs(collection(db, 'examList'));
-        const exams = examSnapshot.docs.map(doc => doc.data());
-        const sortedExams = exams.sort((a, b) => b.exam_id - a.exam_id); // 按exam_id降序排序
+                // 获取当前考试数据
+                const examDoc = await getDoc(doc(db, 'examList', todayExamId.toString()));
+                const examData = examDoc.exists() ? examDoc.data() : null;
+                console.log("examData:", examData);
 
-        const examSelector = document.createElement('select');
-        examSelector.id = 'examSelector';
+                // 获取 testResult 集合中的数据
+                const testResultSnapshot = await getDocs(collection(db, 'testResult'));
+                const testResults = testResultSnapshot.docs
+                    .map(doc => doc.data())
+                    .filter(result => result.id !== 0); // 剔除 id=0 的记录
 
-        sortedExams.forEach(exam => {
-            const option = document.createElement('option');
-            option.value = exam.exam_id;
-            option.textContent = `Exam ${exam.exam_id}`;
-            examSelector.appendChild(option);
-        });
+                // 获取所有单词列表以映射单词名称
+                const wordListSnapshot = await getDocs(collection(db, 'wordlist'));
+                const wordList = wordListSnapshot.docs.map(doc => doc.data());
+                const totalWordCount = wordList.length;
 
-        document.body.insertBefore(examSelector, document.getElementById('testSummary'));
-        examSelector.value = sortedExams[0].exam_id; // 默认选择最大值
-        todayExamId = parseInt(examSelector.value, 10); // 更新默认的 todayExamId
-
-        examSelector.addEventListener('change', async (event) => {
-            todayExamId = parseInt(event.target.value, 10);
-            await loadTestResults(); // 重新加载测试结果
-        });
-    } catch (error) {
-        console.error('加载考试选择器时出错:', error);
-    }
-}
-
-async function loadTestResults() {
-    try {
-        // 获取 testResult 数据
-        const testResultSnapshot = await getDocs(collection(db, 'testResult'));
-        const testResults = testResultSnapshot.docs
-            .map(doc => doc.data())
-            .filter(result => result.test_attempts.some(attempt => attempt.exam_id === todayExamId)); // 仅保留匹配的examId
-
-        // 获取单词映射
-        const wordListSnapshot = await getDocs(collection(db, 'wordlist'));
-        const wordMap = wordListSnapshot.docs.reduce((map, doc) => {
-            const data = doc.data();
-            map[data.id] = data.word; // 假设字段 `id` 和 `word`
-            return map;
-        }, {});
-
-        // 清空表格并重新填充数据
-        const testDetailsTable = document.getElementById('testDetailsTable');
-        testDetailsTable.innerHTML = '';
-
-        testResults.forEach(result => {
-            result.test_attempts
-                .filter(attempt => attempt.exam_id === todayExamId)
-                .forEach(attempt => {
-                    const row = document.createElement('tr');
-                    const word = wordMap[result.id] || '未知单词';
-                    row.innerHTML = `
-                        <td>${word}</td>
-                        <td>${attempt.test_result ? '正确' : '错误'}</td>
-                        <td>${result.test_attempts.length}</td>
-                    `;
-                    testDetailsTable.appendChild(row);
+                // 创建一个 map，用于快速查找单词名称
+                const wordMap = {};
+                wordList.forEach(word => {
+                    wordMap[word.id] = word.word; // 假设 `wordList` 中的字段为 `id` 和 `word`
                 });
-        });
-    } catch (error) {
-        console.error('加载测试结果时出错:', error);
-    }
-}
+
+                // 显示当前考试的测试结果
+                const testDetailsTable = document.getElementById('testDetailsTable');
+                testResults.forEach(result => {
+                    result.test_attempts.forEach(attempt => {
+                        if (attempt.exam_id === todayExamId) {
+                            const row = document.createElement('tr');
+                            const word = wordMap[result.id] || "未知单词";
+                            const reviewStatus = result.review_attempt === 0 ? "初始复习" : `第${result.review_attempt}次复习`;
+
+                            row.innerHTML = `
+                                <td>${word}</td>
+                                <td>${reviewStatus}</td>
+                                <td>${attempt.test_result ? '正确' : '错误'}</td>
+                                <td>${result.test_attempts.length}</td>
+                            `;
+                            testDetailsTable.appendChild(row);
+                        }
+                    });
+                });
 
                 // 加载所有考试的统计数据
                 loadExamStatistics();
