@@ -135,59 +135,10 @@
         import { db } from './enfirebaseConfig.js';
         import { getDoc, doc, getDocs, collection } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
 
-        document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        // 尝试从 localStorage 获取数据
-        let todayExamId = localStorage.getItem('todayExamId');
-        let todayTestList = localStorage.getItem("todayWordList");
+        let todayExamId = parseInt(localStorage.getItem('todayExamId'), 10);
+        let todayTestList = JSON.parse(localStorage.getItem("todayWordList")) || [];
 
-        if (todayExamId && todayTestList) {
-            // Local Storage 中有数据，直接使用
-            todayExamId = parseInt(todayExamId, 10);
-            todayTestList = JSON.parse(todayTestList);
-            console.log("数据从 Local Storage 加载");
-        } else {
-            // Local Storage 中没有数据，从 Firestore 获取
-            console.log("从 Firestore 获取数据...");
-            todayExamId = await getTodayExamIdFromFirestore();
-            todayTestList = await getTodayTestListFromFirestore(todayExamId);
-
-            // 将获取到的数据存入 Local Storage，以便下次使用
-            localStorage.setItem('todayExamId', todayExamId);
-            localStorage.setItem('todayWordList', JSON.stringify(todayTestList));
-            console.log("数据从 Firestore 加载并保存到 Local Storage");
-        }
-
-        // 加载测试结果
-        loadTestResults(todayExamId, todayTestList);
-    } catch (error) {
-        console.error("加载数据时出错:", error);
-    }
-});
-
-// 从 Firestore 获取今天的考试 ID
-async function getTodayExamIdFromFirestore() {
-    const examSnapshot = await getDocs(collection(db, 'examList'));
-    const exams = examSnapshot.docs.map(doc => doc.data());
-    const latestExam = exams
-        .filter(exam => exam.exam_id !== 0) // 排除无效考试
-        .sort((a, b) => b.exam_time_start - a.exam_time_start)[0];
-    return latestExam ? latestExam.exam_id : null;
-}
-
-// 从 Firestore 获取今天的单词列表
-async function getTodayTestListFromFirestore(examId) {
-    const wordSnapshot = await getDocs(collection(db, 'wordlist'));
-    const words = wordSnapshot.docs.map(doc => doc.data());
-    return words.filter(word => word.exam_id === examId);
-}
-
-
-
-        //let todayExamId = parseInt(localStorage.getItem('todayExamId'), 10);
-        //let todayTestList = JSON.parse(localStorage.getItem("todayWordList")) || [];
-
-        async function loadTestResults(todayExamId, todayTestList) {
+        async function loadTestResults() {
             try {
                 console.log("加载测试结果中...");
 
