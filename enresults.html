@@ -164,7 +164,7 @@
                 examSelector.addEventListener('change', async (event) => {
                     todayExamId = parseInt(event.target.value, 10);
                     await loadTestResults();
-                    await loadWordStatistics();
+                    await displayWordStatistics();
                     await loadExamStatistics();
                 });
             } catch (error) {
@@ -318,7 +318,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await populateExamSelector();
             await loadTestResults();
-            await loadWordStatistics();
+            await displayWordStatistics();
             await loadExamStatistics();
         });
 
