@@ -164,8 +164,8 @@
                 examSelector.addEventListener('change', async (event) => {
                     todayExamId = parseInt(event.target.value, 10);
                     await loadTestResults();
-                    await loadWordStatistics();
-                    await loadExamStatistics();
+                    //await loadWordStatistics();
+                    //await loadExamStatistics();
                 });
             } catch (error) {
                 console.error('加载考试选择器时出错:', error);
