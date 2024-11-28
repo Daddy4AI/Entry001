@@ -97,6 +97,7 @@
                     <th>单词</th>
                     <th>测试结果</th>
                     <th>总测试次数</th>
+                    <th>测试时间（秒）</th>
                 </tr>
             </thead>
             <tbody id="testDetailsTable">
@@ -174,38 +175,67 @@
 
         // 加载测试结果
         async function loadTestResults() {
-            try {
-                const testResultSnapshot = await getDocs(collection(db, 'testResult'));
-                const testResults = testResultSnapshot.docs.map(doc => doc.data());
+    try {
+        const testResultSnapshot = await getDocs(collection(db, 'testResult'));
+        const testResults = testResultSnapshot.docs.map(doc => doc.data());
 
-                const wordListSnapshot = await getDocs(collection(db, 'wordlist'));
-                const wordMap = wordListSnapshot.docs.reduce((map, doc) => {
-                    const data = doc.data();
-                    map[data.id] = data.word;
-                    return map;
-                }, {});
+        const wordListSnapshot = await getDocs(collection(db, 'wordlist'));
+        const wordMap = wordListSnapshot.docs.reduce((map, doc) => {
+            const data = doc.data();
+            map[data.id] = data.word;
+            return map;
+        }, {});
 
-                const testDetailsTable = document.getElementById('testDetailsTable');
-                testDetailsTable.innerHTML = '';
-
-                testResults.forEach(result => {
-                    result.test_attempts
-                        .filter(attempt => attempt.exam_id === todayExamId)
-                        .forEach(attempt => {
-                            const row = document.createElement('tr');
-                            const word = wordMap[result.id] || '未知单词';
-                            row.innerHTML = `
-                                <td>${word}</td>
-                                <td>${attempt.test_result ? '正确' : '错误'}</td>
-                                <td>${result.test_attempts.length}</td>
-                            `;
-                            testDetailsTable.appendChild(row);
-                        });
-                });
-            } catch (error) {
-                console.error('加载测试结果时出错:', error);
-            }
+        // 获取当前考试数据
+        const examDoc = await getDoc(doc(db, 'examList', todayExamId.toString()));
+        const examData = examDoc.exists() ? examDoc.data() : null;
+        if (!examData) {
+            console.error('未找到当前考试数据');
+            return;
         }
+        const examStartTime = new Date(examData.exam_time_start).getTime(); // 考试开始时间
+
+        const testDetailsTable = document.getElementById('testDetailsTable');
+        testDetailsTable.innerHTML = '';
+
+        // 筛选当前考试的单词
+        const examAttempts = testResults.flatMap(result =>
+            result.test_attempts
+                .filter(attempt => attempt.exam_id === todayExamId)
+                .map(attempt => ({
+                    ...attempt,
+                    wordId: result.id,
+                    reviewAttempts: result.test_attempts.length,
+                }))
+        );
+
+        // 排序以确保时间顺序
+        examAttempts.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+        // 计算测试时间并插入表格
+        let previousTimestamp = examStartTime;
+        examAttempts.forEach((attempt, index) => {
+            const currentTimestamp = new Date(attempt.timestamp).getTime();
+            const testTime = Math.floor((currentTimestamp - previousTimestamp) / 1000); // 时间差(秒)
+            previousTimestamp = currentTimestamp;
+
+            const row = document.createElement('tr');
+            const word = wordMap[attempt.wordId] || '未知单词';
+
+            row.innerHTML = `
+                <td>${word}</td>
+                <td>${attempt.test_result ? '正确' : '错误'}</td>
+                <td>${attempt.reviewAttempts}</td>
+                <td>${testTime} 秒</td>
+            `;
+            testDetailsTable.appendChild(row);
+        });
+    } catch (error) {
+        console.error('加载测试结果时出错:', error);
+    }
+}
+
+
 
         async function loadExamStatistics() {
             const examStatisticsTable = document.getElementById('examStatisticsTable');
