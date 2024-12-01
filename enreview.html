@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review Words</title>
+    <title>Review Words 001</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -143,6 +143,7 @@
                 if (index < maxWordN) {
                     const inputField = document.createElement('input');
                     inputField.type = 'text';
+                    inputField.inputmode="none"              <!-- 禁用虚拟键盘，仅允许手写 -->
                     inputField.autocomplete = 'off';
                     inputField.autocapitalize = 'off';
                     inputField.autocorrect = 'off';
