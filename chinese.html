@@ -208,7 +208,7 @@
         function playPronunciation(text, rate = 1) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'en-US'; // Set to English
+                utterance.lang = 'en-CN'; // Set to Chinese
                 utterance.rate = rate; // Set speech rate
                 window.speechSynthesis.speak(utterance);
             } else {
@@ -230,11 +230,11 @@
                     </tr>`;
                 wordList.forEach(word => {
                     tableHtml += `<tr>
-                        <td class="column1">${word.word}</td>  
-                        <td class="column2"> 
-                            <button onclick="playPronunciation('${word.word}', 0.8)">播放</button>
+                        <td class="column1">${word.word} 
+                        <button onclick="playPronunciation('${word.word}', 0.8)">播放</button>
                         </td>                      
-                        <td class="column3">${word.jyc || 'N/A'}</td>
+
+                        <td class="column2">${word.jyc || 'N/A'}</td>
                         <td class="column3">${word.fyc || 'N/A'}</td>
                         <td class="column4">${word.status}</td>
                     </tr>`;
