@@ -226,22 +226,23 @@
                     <th class="column1">词语</th>
                     <th class="column3">近义词</th>
                     <th class="column3">反义词</th>
-                    <th class="column4">状态</th>
                     </tr>`;
                 wordList.forEach(word => {
+                    if(word.main === 1) {
                     tableHtml += `<tr>
                         <td class="column1">${word.word} 
-                        <button onclick="playPronunciation('${word.word}', 0.8)">播放</button>
+                        <span class="play-icon" onclick="playPronunciation('${word.word}', 0.8)" title="播放">🔊</span>
                         </td>                      
 
                         <td class="column2">${word.jyc || ' '}
-                            <button onclick="playPronunciation('${word.jyc}', 0.8)">播放</button>
+                            <span class="play-icon" onclick="playPronunciation('${word.jyc}', 0.8)" title="播放">🔊</span>                          
                         </td>
                         <td class="column3">${word.fyc || ' '}
-                            <button onclick="playPronunciation('${word.fyc}', 0.8)">播放</button>
-                            </td>
-                        <td class="column4">${word.status}</td>
+                            <span class="play-icon" onclick="playPronunciation('${word.fyc}', 0.8)" title="播放">🔊</span>  
+                        </td>
+                        
                     </tr>`;
+                }
                 });
                 tableHtml += "</table>";
                 document.getElementById('wordListContainer').innerHTML = tableHtml;
