@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理中文词汇</title>
+    <title>管理中文词语</title>
     <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
 
     <style>
@@ -36,10 +36,10 @@
     </style>
 </head>
 <body>
-    <h1>管理词汇</h1>
+    <h1>管理中文词汇</h1>
     <h2>上传单词</h2>
     <input type="file" id="uploadFile" />
-    <button id="uploadWordsButton">上传单词</button>
+    <button id="uploadWordsButton">上传中文词语</button>
     <button id="clearWordsButton">清空单词列表</button>
 
     <div id="progressBarContainer">
@@ -55,7 +55,7 @@
             <thead>
                 <tr>
                     <th>单词ID</th>
-                    <th>单词</th>
+                    <th>词语</th>
                     <th>近义词</th>
                     <th>反义词</th>
                 </tr>
@@ -70,7 +70,7 @@
     <h2>Exam 参数设定</h2>
     <label for="maxWordN">每天测试单词数量：</label>
     <select id="maxWordN">
-        <option value="2">2</option>
+        <option value="5">5</option>
         <option value="10">10</option>
         <option value="15">15</option>
         <option value="20">20</option>
@@ -122,7 +122,7 @@
 
         // 获取现有数据库中的最大 ID（如果有）
         let currentMaxId = 0;
-        const wordListQuery = await getDocs(collection(db, 'wordlist'));
+        const wordListQuery = await getDocs(collection(db, 'cnwordlist'));
         wordListQuery.forEach((doc) => {
             const wordData = doc.data();
             const idNumber = parseInt(wordData.id, 10);
@@ -146,10 +146,12 @@
                     const wordId = currentMaxId.toString().padStart(6, '0'); // 格式化为 6 位数字，例如 "000001"
 
                     try {
-                        await setDoc(doc(db, 'wordlist', wordId), {
+                        await setDoc(doc(db, 'cnwordlist', wordId), {
                             id: wordId,
                             word: word.word,       // 使用小写的字段名称
-                            chinese: word.chinese, // 使用小写的字段名称
+                            jyc: word.jyc, // 使用小写的字段名称 近义词
+                            fyc: word.fyc, // 使用小写的字段名称 反义词
+                            main: word.main, //确定是否是主要词语
                             created_at: getHongKongTime()
                         });
                         uploadedWords++;
@@ -175,7 +177,7 @@
 
         reader.readAsText(file);
     } else {
-        alert('请上传一个包含英文和中文列的CSV文件。');
+        alert('请上传一个包含单词，近义词和反义词的CSV文件。');
     }
 });
 
@@ -183,7 +185,7 @@
         document.getElementById('clearWordsButton').addEventListener('click', async function() {
             if (confirm('确定要清空所有单词吗？这将无法恢复。')) {
                 try {
-                    const wordListQuery = await getDocs(collection(db, 'wordlist'));
+                    const wordListQuery = await getDocs(collection(db, 'cnwordlist'));
                     wordListQuery.forEach(async (doc) => {
                         await deleteDoc(doc.ref);
                     });
@@ -205,7 +207,7 @@
 
         try {
             // 从Firebase获取单词列表
-            const wordListQuery = await getDocs(collection(db, 'wordlist'));
+            const wordListQuery = await getDocs(collection(db, 'cnwordlist'));
             wordListQuery.forEach((doc) => {
                 const wordData = doc.data();
                 const row = document.createElement('tr');
@@ -232,7 +234,7 @@
 
 
         const loadMaxWordN = async () => {
-            const maxWordNQuery = await getDocs(collection(db, 'examSettings'));
+            const maxWordNQuery = await getDocs(collection(db, 'cnexamSettings'));
             maxWordNQuery.forEach((doc) => {
                 const currentMaxWordN = doc.data().maxWordN;
                 if (currentMaxWordN) {
@@ -244,7 +246,7 @@
         document.getElementById('saveMaxWordNButton').addEventListener('click', async function() {
             const selectedMaxWordN = document.getElementById('maxWordN').value;
             try {
-                await setDoc(doc(db, 'examSettings', 'maxWordN'), { maxWordN: selectedMaxWordN });
+                await setDoc(doc(db, 'cnexamSettings', 'maxWordN'), { maxWordN: selectedMaxWordN });
                 alert('已保存测试单词数量设置：' + selectedMaxWordN);
             } catch (error) {
                 alert('保存设置时出错：' + error.message);
@@ -259,14 +261,14 @@
 // 导出 testResult 数据
 async function exportTestResults() {
     try {
-        const testResultQuery = await getDocs(collection(db, 'testResult'));
+        const testResultQuery = await getDocs(collection(db, 'cntestResult'));
         const testResults = [];
 
         testResultQuery.forEach((doc) => {
             const data = doc.data();
             testResults.push(data);
         });
-        console.log('testResult 开始创建');
+        console.log('cntestResult 开始创建');
         // 创建 JSON 文件
         const jsonData = JSON.stringify(testResults, null, 2);
         const blob = new Blob([jsonData], { type: 'application/json' });
@@ -275,14 +277,14 @@ async function exportTestResults() {
         // 创建下载链接
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'testResult.json';
+        link.download = 'cntestResult.json';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
-        console.log('testResult 数据导出成功');
+        console.log('cntestResult 数据导出成功');
     } catch (error) {
-        console.error('导出 testResult 数据时发生错误:', error);
+        console.error('导出 cntestResult 数据时发生错误:', error);
     }
 }
 
@@ -290,35 +292,35 @@ async function exportTestResults() {
 document.getElementById('exportTestResultButton').addEventListener('click', exportTestResults);
 
 
-// 导入 testResult 数据
+// 导入 cntestResult 数据
 async function importTestResults(event) {
     const file = event.target.files[0];
 
     if (file) {
         const reader = new FileReader();
-        console.log('testResult 数据导入开始');
+        console.log('cntestResult 数据导入开始');
         reader.onload = async function(event) {
             try {
                 const jsonData = JSON.parse(event.target.result);
 
                 if (!Array.isArray(jsonData)) {
-                    alert('文件格式错误：需要是包含 testResult 数据的数组。');
+                    alert('文件格式错误：需要是包含 cntestResult 数据的数组。');
                     return;
                 }
 
-                // 覆盖 Firestore 中的 testResult 数据
+                // 覆盖 Firestore 中的 cntestResult 数据
                 for (const [index, data] of jsonData.entries()) {
                     if (data.id !== undefined) {
-                        const docRef = doc(db, 'testResult', data.id.toString());
+                        const docRef = doc(db, 'cntestResult', data.id.toString());
                         await setDoc(docRef, data);
                     } else {
                         console.warn(`第 ${index + 1} 条记录缺少 ID，已跳过。`);
                     }
                 }
 
-                alert('testResult 数据导入并覆盖成功！');
+                alert('cntestResult 数据导入并覆盖成功！');
             } catch (error) {
-                console.error('导入 testResult 数据时发生错误:', error);
+                console.error('导入 cntestResult 数据时发生错误:', error);
                 alert('导入失败，请检查文件格式或数据内容。');
             }
         };
