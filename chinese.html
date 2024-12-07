@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Build a Strong Vocabulary</title>
+    <title>成为中文默写最强高手</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -228,7 +228,7 @@
                     <th class="column3">反义词</th>
                     </tr>`;
                 wordList.forEach(word => {
-                    if(word.main === 1) {
+                    if(word.main === '1') {
                     tableHtml += `<tr>
                         <td class="column1">${word.word} 
                         <span class="play-icon" onclick="playPronunciation('${word.word}', 0.8)" title="播放">🔊</span>
@@ -237,8 +237,10 @@
                         <td class="column2">${word.jyc || ' '}
                             <span class="play-icon" onclick="playPronunciation('${word.jyc}', 0.8)" title="播放">🔊</span>                          
                         </td>
-                        <td class="column3">${word.fyc || ' '}
-                            <span class="play-icon" onclick="playPronunciation('${word.fyc}', 0.8)" title="播放">🔊</span>  
+                        
+                        <td class="column3">
+                            ${word.fyc || ' '}
+                            ${word.fyc ? `<span class="play-icon" onclick="playPronunciation('${word.fyc}', 0.8)" title="播放">🔊</span>` : ''}
                         </td>
                         
                     </tr>`;
