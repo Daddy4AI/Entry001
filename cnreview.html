@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Words 001</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: lightcyan
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 90%; /* Set table width to 90% of the screen */
+            font-size: 30px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        /* Set column widths */
+        .column1 { width: 10%; }
+        .column2 { width: 25%; }
+        .column3 { width: 15%; }
+        .column4 { width: 10%; }
+        .column5 { width: 25%; }
+        .column6 { width: 15%; }
+        
+        .word-column, .input-column {
+            text-align: left;
+        }
+        .result-column {
+            text-align: left;
+        }
+        .hidden-word {
+            cursor: pointer;
+        }
+        .floating-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title">Review Words</h1>
+    <h2>需要复习的单词列表</h2>
+    <table id="wordTable">
+        <thead>
+            <tr>
+                <th class="column1">序列号</th>
+                <th class="column2">单词</th>
+                <th class="column3">状态</th>
+                <th class="column4">播放</th>
+                <th class="column5">拼写</th>
+                <th class="column6">复习结果</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 动态填充单词列表 -->
+        </tbody>
+    </table>
+    
+    <button id="startTestButton" disabled>开始测试</button>
+
+    <script type="module">
+        import { db } from './enfirebaseConfig.js';
+        import { doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
+
+        let todayWordList = [];
+        let maxWordN = 10;
+        let todayExamId = 0;
+
+        async function initPage() {
+            try {
+                document.addEventListener('DOMContentLoaded', () => {
+                    const maxWordN = localStorage.getItem('maxWordN');
+                    const todayExamId = localStorage.getItem('todayExamId');
+
+                    if (maxWordN && todayExamId) {
+                        console.log(`Max Word Number: ${maxWordN}, Today Exam ID: ${todayExamId}`);
+                    } else {
+                        console.error('Missing maxWordN or todayExamId in localStorage');
+                    }
+                });
+
+                todayWordList = JSON.parse(localStorage.getItem("todayWordList")) || [];
+                renderTable();
+            } catch (error) {
+                console.error("Error initializing page:", error);
+            }
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('wordTable').querySelector('tbody');
+            tableBody.innerHTML = '';
+
+            todayWordList.forEach((word, index) => {
+                const row = document.createElement('tr');
+
+                const indexCell = document.createElement('td');
+                indexCell.classList.add('column1');
+                indexCell.textContent = index + 1;
+                row.appendChild(indexCell);
+
+                const wordCell = document.createElement('td');
+                wordCell.classList.add('column2');
+                wordCell.textContent = word.word;
+                wordCell.classList.add('word-column');
+                wordCell.dataset.word = word.word;
+                row.appendChild(wordCell);
+
+                const statusCell = document.createElement('td');
+                statusCell.classList.add('column3');
+                statusCell.textContent = word.status;
+                row.appendChild(statusCell);
+
+                const playCell = document.createElement('td');
+                playCell.classList.add('column4');
+                const playButton = document.createElement('button');
+                playButton.textContent = "播放";
+                playButton.onclick = () => playAudio(word.word);
+                playCell.appendChild(playButton);
+                row.appendChild(playCell);
+
+                const inputCell = document.createElement('td');
+                inputCell.classList.add('column5');
+                inputCell.classList.add('input-column');
+                if (index < maxWordN) {
+                    const inputField = document.createElement('input');
+                    inputField.type = 'text';
+                    inputField.inputmode="none"              //<!-- 禁用虚拟键盘，仅允许手写 -->
+                    inputField.autocomplete = 'off';
+                    inputField.autocapitalize = 'off';
+                    inputField.autocorrect = 'off';
+                    inputField.spellcheck = 'false';
+                    inputField.onfocus = () => hideWordAndPlay(wordCell, word.word);
+                    inputField.onblur = () => showWord(wordCell, word.word);
+                    inputField.onkeypress = (e) => handleKeyPress(e, inputField, wordCell, word.word, row, index);
+                    inputCell.appendChild(inputField);
+                }
+                row.appendChild(inputCell);
+
+                const resultCell = document.createElement('td');
+                resultCell.classList.add('column6');
+                resultCell.classList.add('result-column');
+                row.appendChild(resultCell);
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        function hideWordAndPlay(cell, word) {
+            cell.textContent = '*'.repeat(10);
+            playAudio(word);
+        }
+
+        function showWord(cell, word) {
+            cell.textContent = word;
+        }
+
+        function playAudio(word) {
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.7; // Set playrate to 0.8
+            speechSynthesis.speak(utterance);
+        }
+
+        function handleKeyPress(e, inputField, wordCell, word, row, index) {
+            if (e.key === 'Enter') {
+                if (inputField.value.toLowerCase() === word.toLowerCase()) {
+                    row.querySelector('.result-column').textContent = '正确';
+                    moveToNextInput(index + 1);
+                } else {
+                    row.querySelector('.result-column').textContent = '错误，再尝试';
+                    inputField.value = '';
+                    inputField.focus();
+                }
+                checkCompletion();
+            }
+        }
+
+        function moveToNextInput(nextIndex) {
+            const nextInput = document.querySelector(`tbody tr:nth-child(${nextIndex + 1}) input`);
+            if (nextInput) {
+                nextInput.focus();
+            }
+        }
+
+        function checkCompletion() {
+            const allCorrect = Array.from(document.querySelectorAll('.result-column'))
+                .slice(0, maxWordN)
+                .every(cell => cell.textContent === '正确');
+
+            if (allCorrect) {
+                startTestButton.disabled = false;
+            }
+        }
+
+        document.getElementById('startTestButton').onclick = () => {
+            window.location.href = "entesting.html";
+        };
+
+        window.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>
