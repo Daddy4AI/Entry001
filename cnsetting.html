@@ -36,7 +36,7 @@
     </style>
 </head>
 <body>
-    <h1>管理中文词汇01</h1>
+    <h1>管理中文词汇02</h1>
     <h2>上传单词</h2>
     <input type="file" id="uploadFile" />
     <button id="uploadWordsButton">上传中文词语</button>
@@ -214,7 +214,8 @@
                 row.innerHTML = `
                     <td>${wordData.id}</td>
                     <td>${wordData.word}</td>
-                    <td>${wordData.chinese}</td>
+                    <td>${wordData.jyc}</td>
+                    <td>${wordData.fyc}</td>
                 `;
                 wordListTableBody.appendChild(row);
             });
