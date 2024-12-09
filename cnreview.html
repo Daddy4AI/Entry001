@@ -65,9 +65,8 @@
                 <th class="column1">序列号</th>
                 <th class="column2">单词</th>
                 <th class="column3">状态</th>
-                <th class="column4">播放</th>
-                <th class="column5">拼写</th>
-                <th class="column6">复习结果</th>
+                <th class="column4">解释</th>
+                <th class="column5">完成复习</th>
             </tr>
         </thead>
         <tbody>
@@ -122,42 +121,69 @@
                 wordCell.textContent = word.word;
                 wordCell.classList.add('word-column');
                 wordCell.dataset.word = word.word;
+                
+                    // 创建图标元素
+                    const playIcon = document.createElement('span');
+                    playIcon.classList.add('play-icon');
+                    playIcon.innerHTML = '🔊'; // 设置图标
+                    playIcon.title = '播放'; // 设置提示文字
+                    playIcon.onclick = () => playPronunciation(word.word, 0.8); // 设置点击事件
+                    // 将图标添加到单元格中
+                    wordCell.appendChild(playIcon);
+
+                // 将单元格添加到行中
                 row.appendChild(wordCell);
+
 
                 const statusCell = document.createElement('td');
                 statusCell.classList.add('column3');
                 statusCell.textContent = word.status;
                 row.appendChild(statusCell);
 
-                const playCell = document.createElement('td');
-                playCell.classList.add('column4');
-                const playButton = document.createElement('button');
-                playButton.textContent = "播放";
-                playButton.onclick = () => playAudio(word.word);
-                playCell.appendChild(playButton);
-                row.appendChild(playCell);
+                const wordCell = document.createElement('td');
+                wordCell.classList.add('column4');
+                wordCell.textContent = word.explaination;
+                wordCell.classList.add('word-column');
+                wordCell.dataset.word = word.word;
+                
+                    // 创建图标元素
+                    const playIcon = document.createElement('span');
+                    playIcon.classList.add('play-icon');
+                    playIcon.innerHTML = '🔊'; // 设置图标
+                    playIcon.title = '解释'; // 设置提示文字
+                    playIcon.onclick = () => playPronunciation(word.explaination, 0.8); // 设置点击事件
+                    // 将图标添加到单元格中
+                    wordCell.appendChild(playIcon);
 
-                const inputCell = document.createElement('td');
-                inputCell.classList.add('column5');
-                inputCell.classList.add('input-column');
-                if (index < maxWordN) {
-                    const inputField = document.createElement('input');
-                    inputField.type = 'text';
-                    inputField.inputmode="none"              //<!-- 禁用虚拟键盘，仅允许手写 -->
-                    inputField.autocomplete = 'off';
-                    inputField.autocapitalize = 'off';
-                    inputField.autocorrect = 'off';
-                    inputField.spellcheck = 'false';
-                    inputField.onfocus = () => hideWordAndPlay(wordCell, word.word);
-                    inputField.onblur = () => showWord(wordCell, word.word);
-                    inputField.onkeypress = (e) => handleKeyPress(e, inputField, wordCell, word.word, row, index);
-                    inputCell.appendChild(inputField);
-                }
-                row.appendChild(inputCell);
+                // 将单元格添加到行中
+                row.appendChild(wordCell);
 
                 const resultCell = document.createElement('td');
-                resultCell.classList.add('column6');
+                resultCell.classList.add('column5');
                 resultCell.classList.add('result-column');
+
+                // 创建一个按钮元素
+                const toggleButton = document.createElement('button');
+                toggleButton.classList.add('toggle-button');
+                toggleButton.textContent = '未完成'; // 初始状态为未完成
+                toggleButton.style.backgroundColor = 'red'; // 按钮初始颜色为红色
+                cell.textContent === '不正确'
+
+                // 添加点击事件监听器
+                toggleButton.addEventListener('click', () => {
+                    if (toggleButton.textContent === '未完成') {
+                        toggleButton.textContent = '完成'; // 更新按钮文本
+                        toggleButton.style.backgroundColor = 'green'; // 更新按钮颜色
+                        cell.textContent === '正确'
+                    } else {
+                        toggleButton.textContent = '未完成'; // 恢复为初始状态
+                        toggleButton.style.backgroundColor = 'red'; // 恢复为初始颜色
+                        cell.textContent === '不正确'
+                    }
+                });
+                // 将按钮添加到单元格
+                resultCell.appendChild(toggleButton);
+                // 将单元格添加到行中
                 row.appendChild(resultCell);
 
                 tableBody.appendChild(row);
