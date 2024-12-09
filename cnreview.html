@@ -8,13 +8,13 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-color: lightcyan
+            background-color: lightcyan;
         }
         table {
             margin: 20px auto;
             border-collapse: collapse;
-            width: 90%; /* Set table width to 90% of the screen */
-            font-size: 30px;
+            width: 90%;
+            font-size: 18px;
         }
         th, td {
             border: 1px solid #ddd;
@@ -24,40 +24,21 @@
         th {
             background-color: #f2f2f2;
         }
-        /* Set column widths */
         .column1 { width: 10%; }
         .column2 { width: 25%; }
         .column3 { width: 15%; }
-        .column4 { width: 10%; }
+        .column4 { width: 25%; }
         .column5 { width: 25%; }
-        .column6 { width: 15%; }
-        
-        .word-column, .input-column {
-            text-align: left;
-        }
-        .result-column {
-            text-align: left;
-        }
-        .hidden-word {
-            cursor: pointer;
-        }
-        .floating-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 15px;
-            background-color: #4caf50;
-            color: white;
+        .toggle-button {
+            padding: 5px 10px;
             border: none;
-            border-radius: 50%;
+            color: white;
             cursor: pointer;
-            font-size: 18px;
-            display: none;
         }
     </style>
 </head>
 <body>
-    <h1 id="title">需要复习的单词列表02</h1>
+    <h1 id="title">需要复习的单词列表</h1>
     <table id="wordTable">
         <thead>
             <tr>
@@ -72,36 +53,11 @@
             <!-- 动态填充单词列表 -->
         </tbody>
     </table>
-    
+
     <button id="startTestButton" disabled>开始测试</button>
 
-    <script type="module">
-        import { db } from './enfirebaseConfig.js';
-        import { doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
-
-        let todayWordList = [];
-        let maxWordN = 10;
-        let todayExamId = 0;
-
-        async function initPage() {
-            try {
-                document.addEventListener('DOMContentLoaded', () => {
-                    const maxWordN = localStorage.getItem('maxWordN');
-                    const todayExamId = localStorage.getItem('todayExamId');
-
-                    if (maxWordN && todayExamId) {
-                        console.log(`Max Word Number: ${maxWordN}, Today Exam ID: ${todayExamId}`);
-                    } else {
-                        console.error('Missing maxWordN or todayExamId in localStorage');
-                    }
-                });
-
-                todayWordList = JSON.parse(localStorage.getItem("todayWordList")) || [];
-                renderTable();
-            } catch (error) {
-                console.error("Error initializing page:", error);
-            }
-        }
+    <script>
+        let todayWordList = JSON.parse(localStorage.getItem("todayWordList")) || [];
 
         function renderTable() {
             const tableBody = document.getElementById('wordTable').querySelector('tbody');
@@ -110,117 +66,73 @@
             todayWordList.forEach((word, index) => {
                 const row = document.createElement('tr');
 
+                // 序列号
                 const indexCell = document.createElement('td');
-                indexCell.classList.add('column1');
                 indexCell.textContent = index + 1;
                 row.appendChild(indexCell);
 
+                // 单词及发音按钮
                 const wordCell = document.createElement('td');
-                wordCell.classList.add('column2');
                 wordCell.textContent = word.word;
-                wordCell.classList.add('word-column');
-                wordCell.dataset.word = word.word;
-                
-                    // 创建图标元素
-                    const playIcon = document.createElement('span');
-                    playIcon.classList.add('play-icon');
-                    playIcon.innerHTML = '🔊'; // 设置图标
-                    playIcon.title = '播放'; // 设置提示文字
-                    playIcon.onclick = () => playPronunciation(word.word, 0.8); // 设置点击事件
-                    // 将图标添加到单元格中
-                    wordCell.appendChild(playIcon);
-
-                // 将单元格添加到行中
+                const playIcon = document.createElement('span');
+                playIcon.innerHTML = ' 🔊';
+                playIcon.style.cursor = 'pointer';
+                playIcon.title = '播放';
+                playIcon.onclick = () => playAudio(word.word);
+                wordCell.appendChild(playIcon);
                 row.appendChild(wordCell);
 
-
+                // 状态
                 const statusCell = document.createElement('td');
-                statusCell.classList.add('column3');
-                statusCell.textContent = word.status;
+                statusCell.textContent = word.status || '未知';
                 row.appendChild(statusCell);
 
-                const expCell = document.createElement('td');
-                expCell.classList.add('column4');
-                expCell.textContent = word.explaination;
-                expCell.classList.add('word-column');
-                expCell.dataset.word = word.explaination;
-                
-                    // 创建图标元素
-                    const eplayIcon = document.createElement('span');
-                    eplayIcon.classList.add('play-icon');
-                    eplayIcon.innerHTML = '🔊'; // 设置图标
-                    eplayIcon.title = '解释'; // 设置提示文字
-                    eplayIcon.onclick = () => playPronunciation(word.explaination, 0.8); // 设置点击事件
-                    // 将图标添加到单元格中
-                    wordCell.appendChild(eplayIcon);
+                // 解释
+                const explanationCell = document.createElement('td');
+                explanationCell.textContent = word.explanation || '暂无解释';
+                row.appendChild(explanationCell);
 
-                // 将单元格添加到行中
-                row.appendChild(wordCell);
-
+                // 复习状态按钮
                 const resultCell = document.createElement('td');
-                resultCell.classList.add('column5');
-                resultCell.classList.add('result-column');
-
-                // 创建一个按钮元素
                 const toggleButton = document.createElement('button');
+                toggleButton.textContent = '未完成';
+                toggleButton.style.backgroundColor = 'red';
                 toggleButton.classList.add('toggle-button');
-                toggleButton.textContent = '未完成'; // 初始状态为未完成
-                toggleButton.style.backgroundColor = 'red'; // 按钮初始颜色为红色
-                
-
-                // 添加点击事件监听器
-                toggleButton.addEventListener('click', () => {
+                toggleButton.onclick = () => {
                     if (toggleButton.textContent === '未完成') {
-                        toggleButton.textContent = '完成'; // 更新按钮文本
-                        toggleButton.style.backgroundColor = 'green'; // 更新按钮颜色
-                        
+                        toggleButton.textContent = '完成';
+                        toggleButton.style.backgroundColor = 'green';
                     } else {
-                        toggleButton.textContent = '未完成'; // 恢复为初始状态
-                        toggleButton.style.backgroundColor = 'red'; // 恢复为初始颜色
-                        
+                        toggleButton.textContent = '未完成';
+                        toggleButton.style.backgroundColor = 'red';
                     }
-                });
-                // 将按钮添加到单元格
+                    checkCompletion();
+                };
                 resultCell.appendChild(toggleButton);
-                // 将单元格添加到行中
                 row.appendChild(resultCell);
 
                 tableBody.appendChild(row);
             });
         }
 
-        function hideWordAndPlay(cell, word) {
-            cell.textContent = '*'.repeat(10);
-            playAudio(word);
-        }
-
-        function showWord(cell, word) {
-            cell.textContent = word;
-        }
-
         function playAudio(word) {
             const utterance = new SpeechSynthesisUtterance(word);
             utterance.lang = 'zh-CN';
-            utterance.rate = 0.7; // Set playrate to 0.8
+            utterance.rate = 0.8;
             speechSynthesis.speak(utterance);
         }
 
-
         function checkCompletion() {
-            const allCorrect = Array.from(document.querySelectorAll('.result-column'))
-                .slice(0, maxWordN)
-                .every(cell => cell.textContent === '正确');
-
-            if (allCorrect) {
-                startTestButton.disabled = false;
-            }
+            const allCompleted = Array.from(document.querySelectorAll('.toggle-button'))
+                .every(button => button.textContent === '完成');
+            document.getElementById('startTestButton').disabled = !allCompleted;
         }
 
         document.getElementById('startTestButton').onclick = () => {
-            window.location.href = "entesting.html";
+            window.location.href = 'entesting.html';
         };
 
-        window.addEventListener('DOMContentLoaded', initPage);
+        renderTable();
     </script>
 </body>
 </html>
