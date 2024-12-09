@@ -36,7 +36,7 @@
     </style>
 </head>
 <body>
-    <h1>管理中文词汇02</h1>
+    <h1>管理中文词汇</h1>
     <h2>上传单词</h2>
     <input type="file" id="uploadFile" />
     <button id="uploadWordsButton">上传中文词语</button>
@@ -149,10 +149,10 @@
                         await setDoc(doc(db, 'cnwordlist', wordId), {
                             id: wordId,
                             word: word.word,       // 使用小写的字段名称
+                            main: word.main, //确定是否是主要词语
                             jyc: word.jyc, // 使用小写的字段名称 近义词
                             fyc: word.fyc, // 使用小写的字段名称 反义词
-                            main: word.main, //确定是否是主要词语
-                            main: word.explaination, //这个词语的简要意思
+                            explaination: word.explaination, //这个词语的简要意思
                             created_at: getHongKongTime()
                         });
                         uploadedWords++;
@@ -216,7 +216,7 @@
                     <td>${wordData.id}</td>
                     <td>${wordData.word}</td>
                     <td>${wordData.jyc}</td>
-                    <td>${wordData.fyc}</td>
+                    <td>${wordData.fyc}</td>                    
                 `;
                 wordListTableBody.appendChild(row);
             });

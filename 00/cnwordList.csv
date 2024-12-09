@@ -1,32 +1,13 @@
-﻿word,jyc,fyc,main,,,,
-上面,高处,下面,1,,,,
-高处,,,0,,,,
-下面,,,0,,,,
-山顶,顶峰,山脚,1,,,,
-顶峰,,,0,,,,
-山脚,,,0,,,,
-人们,众人,,1,,,,
-众人,,,0,,,,
-东方,东边,西方,1,,,,
-东边,,,0,,,,
-西方,,,0,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-上面,,,,,,,
-山顶,,,,,,,
-人们,,,,,,,
-东方,,,,,,,
-,,,,,,,
-,,,,,,2021 Scheme,Current Scheme
-,,,,,number of shares,same,same
-,,,,,Employee acquisition price,same,same
-,,,,,Vesting period,end of 2023,10 days after shareholder's approval
-,,,,,consideration,issue new domestic shares and dilution to existing shares,"existing shares the Company repurhcase from the open market, which result no additional dilution"
-,,,,,Follow up,submission for another approval from CSRC to allow the shares can be traded on HKEX which cost around 2million RMB by the end of 2025,Nothing
+﻿word,main,jyc,fyc,explaination
+上面,1,上方,下面,指位置在高处或上方
+上方,2,,下面,指位置在高处或上方
+下面,3,上面,,指位置在低处或下方
+山顶,1,山头,山脚,山的最高处
+山头,2,,山脚,山的最高处
+山脚,3,山顶,,山的底部
+人们,1,众人,无人,泛指所有人
+众人,2,,无人,泛指所有人
+无人,3,人们,,没有人
+东方,1,东边,西方,指太阳升起的方向
+东边,2,,西方,指太阳升起的方向
+西方,3,东方,,指太阳落下的方向
