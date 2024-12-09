@@ -166,18 +166,18 @@
                 toggleButton.classList.add('toggle-button');
                 toggleButton.textContent = '未完成'; // 初始状态为未完成
                 toggleButton.style.backgroundColor = 'red'; // 按钮初始颜色为红色
-                cell.textContent === '不正确'
+                
 
                 // 添加点击事件监听器
                 toggleButton.addEventListener('click', () => {
                     if (toggleButton.textContent === '未完成') {
                         toggleButton.textContent = '完成'; // 更新按钮文本
                         toggleButton.style.backgroundColor = 'green'; // 更新按钮颜色
-                        cell.textContent === '正确'
+                        
                     } else {
                         toggleButton.textContent = '未完成'; // 恢复为初始状态
                         toggleButton.style.backgroundColor = 'red'; // 恢复为初始颜色
-                        cell.textContent === '不正确'
+                        
                     }
                 });
                 // 将按钮添加到单元格
@@ -205,26 +205,6 @@
             speechSynthesis.speak(utterance);
         }
 
-        function handleKeyPress(e, inputField, wordCell, word, row, index) {
-            if (e.key === 'Enter') {
-                if (inputField.value.toLowerCase() === word.toLowerCase()) {
-                    row.querySelector('.result-column').textContent = '正确';
-                    moveToNextInput(index + 1);
-                } else {
-                    row.querySelector('.result-column').textContent = '错误，再尝试';
-                    inputField.value = '';
-                    inputField.focus();
-                }
-                checkCompletion();
-            }
-        }
-
-        function moveToNextInput(nextIndex) {
-            const nextInput = document.querySelector(`tbody tr:nth-child(${nextIndex + 1}) input`);
-            if (nextInput) {
-                nextInput.focus();
-            }
-        }
 
         function checkCompletion() {
             const allCorrect = Array.from(document.querySelectorAll('.result-column'))
