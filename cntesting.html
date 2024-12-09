@@ -28,15 +28,8 @@
             margin: 20px;
             cursor: pointer;
         }
-        .progress-display, .word-display, input[type="text"] {
-            width: 50%;
-            text-align: center;
-            margin: auto;
-        }
-        input[type="text"] {
-            padding: 10px;
-            font-size: 25px;
-        }
+
+
         .footer {
             margin-top: 20px;
             font-size: 12px;
@@ -126,7 +119,7 @@
     console.log(result);
 
     document.getElementById("wordDisplay").textContent = currentWord.word;
-    document.getElementById("inputField").value = "";
+    
 }
 
 
@@ -194,7 +187,7 @@
     document.getElementById("progressTitle").textContent = `${currentWordIndex + 1} of ${maxWordN}个单词`;
     document.getElementById("wordDisplay").textContent = "**********";
     document.getElementById("wordTestProgress").textContent = "测试状态";
-    document.getElementById("inputField").value = "";
+    
     retestCount = 0;
 
     playAudio(currentWord.word);
@@ -217,7 +210,7 @@
         }
 
         async function checkSpelling() {
-    const inputField = document.getElementById("inputField");
+    
     const userSpelling = inputField.value.trim().toLowerCase();
     const correctSpelling = currentWord.word.toLowerCase();
 
@@ -235,8 +228,8 @@
 
             setTimeout(() => {
                 loadNextWord();
-                inputField.value = "";
-                inputField.focus();
+                //inputField.value = "";
+                //inputField.focus();
             }, 500);
         } else {
             retestCount++;
@@ -248,13 +241,13 @@
 
                 setTimeout(() => {
                     loadNextWord();
-                    inputField.value = "";
-                    inputField.focus();
+                    //inputField.value = "";
+                    //inputField.focus();
                 }, 500);
             } else {
                 setTimeout(() => {
-                    inputField.value = "";
-                    inputField.focus();
+                    //inputField.value = "";
+                    //inputField.focus();
                 }, 500);
             }
         }
