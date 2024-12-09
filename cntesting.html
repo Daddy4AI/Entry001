@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Words</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-image: url('pics/entestingbackground.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed;
+            font-size: 15px;
+        }
+        .loading {
+            font-size: 14px;
+            color: grey;
+            margin-bottom: 10px;
+        }
+        .buttons {
+            margin: 25px;
+        }
+        .word-display {
+            font-size: 25px;
+            margin: 20px;
+            cursor: pointer;
+        }
+        .progress-display, .word-display, input[type="text"] {
+            width: 50%;
+            text-align: center;
+            margin: auto;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 25px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: grey;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loadingMessage">正在加载单词，请稍后...</div>
+    <h1 id="title"></h1>
+    <h2 id="progressTitle"></h2>
+
+    <div class="buttons">
+        <button id="playSoundButton">播放单词</button>
+        
+        <div class="word-display" id="wordDisplay">**********</div>
+        <div class="word-display" id="wordDisplay">请在书本上默写单词</div>
+
+        <button id="nextWordButton">下一个单词</button>
+    </div>
+
+    <div class="footer">version 007</div>
+
+    <script type="module">
+        import { db } from './enfirebaseConfig.js';        
+        import { doc, getDoc, setDoc, updateDoc, collection } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
+
+
+        const maxWordN = parseInt(localStorage.getItem('maxWordN'), 10);
+        const todayExamId = parseInt(localStorage.getItem('todayExamId'), 10);
+        const examTimeInitial = localStorage.getItem('examTimeInitial');
+        console.log('maxWordN retrieved:', maxWordN);
+        console.log('todayExamId retrieved:', todayExamId);
+        console.log('examTimeInitial retrieved:', examTimeInitial);
+
+        let todayTestList = [];
+        let currentWordIndex = 0;
+        let currentWord = null;
+        let retestCount = 0;
+        let examData = {
+            cnexamList: {},
+            testResults: []
+        };
+
+        async function initPage() {
+            try {
+                console.log('Starting initial setup...');
+                const examTimeStart = new Date().toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
+                examData.cnexamList = {
+                    id: todayExamId,
+                    exam_id: todayExamId,
+                    exam_time_initial: examTimeInitial,
+                    exam_time_start: examTimeStart,
+                    exam_time_end: null
+                };
+
+                document.getElementById('title').textContent = `开始今天的测试，这是第${todayExamId}次测试`;
+                todayTestList = JSON.parse(localStorage.getItem("todayWordList")).slice(0, maxWordN) || [];
+                if (!todayTestList.length) {
+                    alert("没有找到今天的测试单词，请检查是否已经生成 todayTestList");
+                    return;
+                }
+
+                document.getElementById('loadingMessage').style.display = "none";
+                loadWord();
+            } catch (error) {
+                console.error("Error initializing page:", error);
+            }
+        }
+
+
+        function saveTestResult(isCorrect) {
+    const currentTimestamp = new Date().toISOString();
+    const result = {
+        id: currentWord.id,
+        last_exam_id: todayExamId,
+        review_attempt: isCorrect ? (currentWord.review_attempt || 0) + 1 : (currentWord.review_attempt || 0),
+        test_attempts: [...(currentWord.test_attempts || []), { test_result: isCorrect, exam_id: todayExamId, timestamp: currentTimestamp }]
+    };
+
+    // 更新当前单词的测试记录
+    currentWord.test_attempts = result.test_attempts;
+
+    // 保存到本地 examData
+    examData.testResults.push(result);
+    console.log('本次测试结果已保存到本地:');
+    console.log(result);
+
+    document.getElementById("wordDisplay").textContent = currentWord.word;
+    document.getElementById("inputField").value = "";
+}
+
+
+
+        async function saveExamDataToFirebase() {
+            document.getElementById('loadingMessage').textContent = '正在保存测试结果，请稍等';
+            document.getElementById('loadingMessage').style.color = 'red';
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('title').textContent = `正在保存测试结果，请稍等...`;
+            document.getElementById('title').style.color = 'red';
+
+            try {
+                const examListRef = doc(db, 'cnexamList', todayExamId.toString());
+                await setDoc(examListRef, examData.enexamList);
+
+                for (const testResult of examData.testResults) {
+                    const wordRef = doc(db, 'testResult', testResult.id.toString());
+                    await setDoc(wordRef, testResult);
+                }
+
+                console.log('所有测试结果已保存到 Firebase');
+                alert("完成今天的测试");
+                window.location.href = "enresults.html";
+            } catch (error) {
+                console.error("Error saving exam data:", error);
+            } finally {
+                document.getElementById('loadingMessage').style.display = 'none';
+            }
+        }
+
+
+        async function loadWord() {
+    if (currentWordIndex >= todayTestList.length) {
+        examData.cnexamList.exam_time_end = new Date().toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
+        await saveExamDataToFirebase();
+        return;
+    }
+
+    currentWord = todayTestList[currentWordIndex];
+    
+    // Fetch the existing test result for the current word
+    try {
+        const wordRef = doc(db, 'testResult', currentWord.id.toString());
+        const resultSnapshot = await getDoc(wordRef);
+        if (resultSnapshot.exists()) {
+            const existingData = resultSnapshot.data();
+            currentWord.review_attempt = existingData.review_attempt || 0;
+            currentWord.test_attempts = existingData.test_attempts || [];
+        } else {
+            currentWord.review_attempt = 0;
+            currentWord.test_attempts = [];
+        }
+    } catch (error) {
+        console.error("Error fetching test result for word:", currentWord.id, error);
+        currentWord.review_attempt = 0;
+        currentWord.test_attempts = [];
+    }
+
+    // Log the existing test result
+    console.log(`Current test result for word ID ${currentWord.id}:`, {
+        review_attempt: currentWord.review_attempt,
+        test_attempts: currentWord.test_attempts
+    });
+
+    document.getElementById("progressTitle").textContent = `${currentWordIndex + 1} of ${maxWordN}个单词`;
+    document.getElementById("wordDisplay").textContent = "**********";
+    document.getElementById("wordTestProgress").textContent = "测试状态";
+    document.getElementById("inputField").value = "";
+    retestCount = 0;
+
+    playAudio(currentWord.word);
+}
+
+
+
+        function playAudio(word) {
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            speechSynthesis.speak(utterance);
+        }
+
+        function playCurrentWord() {
+            playAudio(currentWord.word);
+        }
+
+        function resetWordDisplay() {
+            document.getElementById("wordDisplay").textContent = "**********";
+        }
+
+        async function checkSpelling() {
+    const inputField = document.getElementById("inputField");
+    const userSpelling = inputField.value.trim().toLowerCase();
+    const correctSpelling = currentWord.word.toLowerCase();
+
+    // Log the current test result before processing
+    console.log(`Current test result for word ID ${currentWord.id}:`, {
+        review_attempt: currentWord.review_attempt,
+        test_attempts: currentWord.test_attempts
+    });
+
+    if (userSpelling === correctSpelling) {
+        if (retestCount === 0) {
+            saveTestResult(true);
+            document.getElementById("wordTestProgress").textContent = "拼写正确！准备下一个单词";
+            document.getElementById("nextWordButton").disabled = false;
+
+            setTimeout(() => {
+                loadNextWord();
+                inputField.value = "";
+                inputField.focus();
+            }, 500);
+        } else {
+            retestCount++;
+            document.getElementById("wordTestProgress").textContent = `完成第${retestCount - 1}次测试，还有${4 - retestCount}次`;
+
+            if (retestCount === 4) {
+                document.getElementById("nextWordButton").disabled = false;
+                document.getElementById("wordTestProgress").textContent = "准备下一个单词";
+
+                setTimeout(() => {
+                    loadNextWord();
+                    inputField.value = "";
+                    inputField.focus();
+                }, 500);
+            } else {
+                setTimeout(() => {
+                    inputField.value = "";
+                    inputField.focus();
+                }, 500);
+            }
+        }
+    } else {
+        if (retestCount === 0) {
+            saveTestResult(false);
+            document.getElementById("wordTestProgress").textContent = "拼写错误，再尝试3次";
+            document.getElementById("wordDisplay").textContent = currentWord.word;
+
+            setTimeout(() => {
+                inputField.value = "";
+                inputField.focus();
+                document.getElementById("wordDisplay").textContent = "**********";
+            }, 500);
+
+            retestCount++;
+        } else if (retestCount < 4) {
+            document.getElementById("wordTestProgress").textContent = "拼写不正确，继续尝试";
+            document.getElementById("wordDisplay").textContent = currentWord.word;
+
+            setTimeout(() => {
+                inputField.value = "";
+                inputField.focus();
+                document.getElementById("wordDisplay").textContent = "**********";
+            }, 500);
+        }
+    }
+}
+
+        function loadNextWord() {
+            document.getElementById("nextWordButton").disabled = true;
+            currentWordIndex++;
+            loadWord();
+        }
+
+        document.getElementById("playSoundButton").addEventListener("click", playCurrentWord);
+        document.getElementById("nextWordButton").addEventListener("click", loadNextWord);
+        document.getElementById("inputField").addEventListener("focus", resetWordDisplay);
+        document.getElementById("inputField").addEventListener("keypress", (e) => {
+            if (e.key === 'Enter') {
+                checkSpelling();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>
