@@ -146,13 +146,13 @@
                 expCell.dataset.word = word.explaination;
                 
                     // 创建图标元素
-                    const playIcon = document.createElement('span');
-                    playIcon.classList.add('play-icon');
-                    playIcon.innerHTML = '🔊'; // 设置图标
-                    playIcon.title = '解释'; // 设置提示文字
-                    playIcon.onclick = () => playPronunciation(word.explaination, 0.8); // 设置点击事件
+                    const eplayIcon = document.createElement('span');
+                    eplayIcon.classList.add('play-icon');
+                    eplayIcon.innerHTML = '🔊'; // 设置图标
+                    eplayIcon.title = '解释'; // 设置提示文字
+                    eplayIcon.onclick = () => playPronunciation(word.explaination, 0.8); // 设置点击事件
                     // 将图标添加到单元格中
-                    wordCell.appendChild(playIcon);
+                    wordCell.appendChild(eplayIcon);
 
                 // 将单元格添加到行中
                 row.appendChild(wordCell);
