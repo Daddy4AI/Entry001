@@ -57,7 +57,7 @@
     </style>
 </head>
 <body>
-    <h1 id="title">需要复习的单词列表</h1>
+    <h1 id="title">需要复习的单词列表01</h1>
     <table id="wordTable">
         <thead>
             <tr>
@@ -65,7 +65,7 @@
                 <th class="column2">单词</th>
                 <th class="column3">状态</th>
                 <th class="column4">解释</th>
-                <th class="column5">完成复习</th>
+                <th class="column5">完成复习?</th>
             </tr>
         </thead>
         <tbody>
@@ -139,11 +139,11 @@
                 statusCell.textContent = word.status;
                 row.appendChild(statusCell);
 
-                const wordCell = document.createElement('td');
-                wordCell.classList.add('column4');
-                wordCell.textContent = word.explaination;
-                wordCell.classList.add('word-column');
-                wordCell.dataset.word = word.word;
+                const expCell = document.createElement('td');
+                expCell.classList.add('column4');
+                expCell.textContent = word.explaination;
+                expCell.classList.add('word-column');
+                expCell.dataset.word = word.explaination;
                 
                     // 创建图标元素
                     const playIcon = document.createElement('span');
