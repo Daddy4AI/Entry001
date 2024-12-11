@@ -197,7 +197,8 @@
 
         function playAudio(word) {
             const utterance = new SpeechSynthesisUtterance(word);
-            utterance.lang = 'en-US';
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.8;
             speechSynthesis.speak(utterance);
         }
 
