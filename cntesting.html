@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testing Words</title>
+    <title>听写词语</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -188,11 +188,9 @@
     document.getElementById("wordDisplay").textContent = "**********";
     document.getElementById("wordTestProgress").textContent = "测试状态";
     
-    retestCount = 0;
-
+    
     playAudio(currentWord.word);
 }
-
 
 
         function playAudio(word) {
@@ -206,78 +204,6 @@
             playAudio(currentWord.word);
         }
 
-        function resetWordDisplay() {
-            document.getElementById("wordDisplay").textContent = "**********";
-        }
-
-        async function checkSpelling() {
-    
-    const userSpelling = inputField.value.trim().toLowerCase();
-    const correctSpelling = currentWord.word.toLowerCase();
-
-    // Log the current test result before processing
-    console.log(`Current test result for word ID ${currentWord.id}:`, {
-        review_attempt: currentWord.review_attempt,
-        test_attempts: currentWord.test_attempts
-    });
-
-    if (userSpelling === correctSpelling) {
-        if (retestCount === 0) {
-            saveTestResult(true);
-            document.getElementById("wordTestProgress").textContent = "拼写正确！准备下一个单词";
-            document.getElementById("nextWordButton").disabled = false;
-
-            setTimeout(() => {
-                loadNextWord();
-                //inputField.value = "";
-                //inputField.focus();
-            }, 500);
-        } else {
-            retestCount++;
-            document.getElementById("wordTestProgress").textContent = `完成第${retestCount - 1}次测试，还有${4 - retestCount}次`;
-
-            if (retestCount === 4) {
-                document.getElementById("nextWordButton").disabled = false;
-                document.getElementById("wordTestProgress").textContent = "准备下一个单词";
-
-                setTimeout(() => {
-                    loadNextWord();
-                    //inputField.value = "";
-                    //inputField.focus();
-                }, 500);
-            } else {
-                setTimeout(() => {
-                    //inputField.value = "";
-                    //inputField.focus();
-                }, 500);
-            }
-        }
-    } else {
-        if (retestCount === 0) {
-            saveTestResult(false);
-            document.getElementById("wordTestProgress").textContent = "拼写错误，再尝试3次";
-            document.getElementById("wordDisplay").textContent = currentWord.word;
-
-            setTimeout(() => {
-                inputField.value = "";
-                inputField.focus();
-                document.getElementById("wordDisplay").textContent = "**********";
-            }, 500);
-
-            retestCount++;
-        } else if (retestCount < 4) {
-            document.getElementById("wordTestProgress").textContent = "拼写不正确，继续尝试";
-            document.getElementById("wordDisplay").textContent = currentWord.word;
-
-            setTimeout(() => {
-                inputField.value = "";
-                inputField.focus();
-                document.getElementById("wordDisplay").textContent = "**********";
-            }, 500);
-        }
-    }
-}
-
         function loadNextWord() {
             document.getElementById("nextWordButton").disabled = true;
             currentWordIndex++;
@@ -286,12 +212,7 @@
 
         document.getElementById("playSoundButton").addEventListener("click", playCurrentWord);
         document.getElementById("nextWordButton").addEventListener("click", loadNextWord);
-        document.getElementById("inputField").addEventListener("focus", resetWordDisplay);
-        document.getElementById("inputField").addEventListener("keypress", (e) => {
-            if (e.key === 'Enter') {
-                checkSpelling();
-            }
-        });
+    
 
         window.addEventListener('DOMContentLoaded', initPage);
     </script>
