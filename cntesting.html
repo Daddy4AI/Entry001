@@ -101,92 +101,17 @@
         }
 
 
-        function saveTestResult(isCorrect) {
-    const currentTimestamp = new Date().toISOString();
-    const result = {
-        id: currentWord.id,
-        last_exam_id: todayExamId,
-        review_attempt: isCorrect ? (currentWord.review_attempt || 0) + 1 : (currentWord.review_attempt || 0),
-        test_attempts: [...(currentWord.test_attempts || []), { test_result: isCorrect, exam_id: todayExamId, timestamp: currentTimestamp }]
-    };
-
-    // 更新当前单词的测试记录
-    currentWord.test_attempts = result.test_attempts;
-
-    // 保存到本地 examData
-    examData.testResults.push(result);
-    console.log('本次测试结果已保存到本地:');
-    console.log(result);
-
-    document.getElementById("wordDisplay").textContent = currentWord.word;
-    
-}
-
-
-
-        async function saveExamDataToFirebase() {
-            document.getElementById('loadingMessage').textContent = '正在保存测试结果，请稍等';
-            document.getElementById('loadingMessage').style.color = 'red';
-            document.getElementById('loadingMessage').style.display = 'block';
-            document.getElementById('title').textContent = `正在保存测试结果，请稍等...`;
-            document.getElementById('title').style.color = 'red';
-
-            try {
-                const examListRef = doc(db, 'cnexamList', todayExamId.toString());
-                await setDoc(examListRef, examData.enexamList);
-
-                for (const testResult of examData.testResults) {
-                    const wordRef = doc(db, 'testResult', testResult.id.toString());
-                    await setDoc(wordRef, testResult);
-                }
-
-                console.log('所有测试结果已保存到 Firebase');
-                alert("完成今天的测试");
-                window.location.href = "enresults.html";
-            } catch (error) {
-                console.error("Error saving exam data:", error);
-            } finally {
-                document.getElementById('loadingMessage').style.display = 'none';
-            }
-        }
-
-
 async function loadWord() {
     if (currentWordIndex >= todayTestList.length) {
         examData.cnexamList.exam_time_end = new Date().toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
-        await saveExamDataToFirebase();
-        return;
+        console.log('所有单词都完成默写');
+        alert("完成今天的测试");
+        window.location.href = "cngrading.html";
     }
 
     currentWord = todayTestList[currentWordIndex];
-    
-    // Fetch the existing test result for the current word
-    try {
-        const wordRef = doc(db, 'testResult', currentWord.id.toString());
-        const resultSnapshot = await getDoc(wordRef);
-        if (resultSnapshot.exists()) {
-            const existingData = resultSnapshot.data();
-            currentWord.review_attempt = existingData.review_attempt || 0;
-            currentWord.test_attempts = existingData.test_attempts || [];
-        } else {
-            currentWord.review_attempt = 0;
-            currentWord.test_attempts = [];
-        }
-    } catch (error) {
-        console.error("Error fetching test result for word:", currentWord.id, error);
-        currentWord.review_attempt = 0;
-        currentWord.test_attempts = [];
-    }
 
-    // Log the existing test result
-    console.log(`Current test result for word ID ${currentWord.id}:`, {
-        review_attempt: currentWord.review_attempt,
-        test_attempts: currentWord.test_attempts
-    });
 
-    document.getElementById("progressTitle").textContent = `${currentWordIndex + 1} of ${maxWordN}个单词`;
-    document.getElementById("wordDisplay").textContent = "**********";
-     
     
     playAudio(currentWord.word);
 }
