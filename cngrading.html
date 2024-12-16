@@ -139,7 +139,7 @@
             reviewResults[index] = result;
 
             // 更新批改栏内容
-            actionCell.innerHTML = `<span>${isCorrect ? '正确' : '错误'}</span>`;
+            actionCell.innerHTML = `<span style="margin-right: 10px;">${isCorrect ? '正确' : '错误'}</span>`;
             const modifyButton = document.createElement('button');
             modifyButton.textContent = '修改';
             modifyButton.onclick = () => restoreButtons(index, actionCell);
@@ -181,6 +181,7 @@
                     await setDoc(wordRef, result);
                 }
                 alert('结果已成功保存！');
+                window.location.href = 'results.html'; // 保存成功后跳转
             } catch (error) {
                 console.error('保存结果失败:', error);
                 alert('保存失败，请重试。');
