@@ -44,14 +44,13 @@
 
     <div class="buttons">
         <button id="playSoundButton">播放单词</button>
-        
         <div class="word-display" id="wordDisplay">**********</div>
         <div class="word-display" id="wordDisplay">请在书本上默写单词</div>
 
         <button id="nextWordButton">下一个单词</button>
     </div>
 
-    <div class="footer">version 007</div>
+    <div class="footer">version 001</div>
 
     <script type="module">
         import { db } from './enfirebaseConfig.js';        
@@ -111,6 +110,8 @@ async function loadWord() {
 
     currentWord = todayTestList[currentWordIndex];
 
+    document.getElementById("progressTitle").textContent = `${currentWordIndex + 1} of ${maxWordN}个单词`;
+    document.getElementById("wordDisplay").textContent = "**********";
 
     
     playAudio(currentWord.word);
