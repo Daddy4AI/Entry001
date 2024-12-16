@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>听写词语批改</title>
+    <title>听写词语批改01</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -76,71 +76,74 @@
         import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
 
         let todayWordList = JSON.parse(localStorage.getItem("todayWordList")) || [];
+        
         let reviewResults = []; // 保存批改结果
 
-        function renderTable() {
-            const tableBody = document.getElementById('wordTable').querySelector('tbody');
-            tableBody.innerHTML = '';
+        const todayExamId = parseInt(localStorage.getItem('todayExamId'), 10) || 0;
 
-            todayWordList.forEach((word, index) => {
-                const row = document.createElement('tr');
+function renderTable() {
+    const tableBody = document.getElementById('wordTable').querySelector('tbody');
+    tableBody.innerHTML = '';
 
-                // 序号
-                const indexCell = document.createElement('td');
-                indexCell.textContent = index + 1;
-                row.appendChild(indexCell);
+    todayWordList.forEach((word, index) => {
+        const row = document.createElement('tr');
 
-                // 单词
-                const wordCell = document.createElement('td');
-                wordCell.textContent = word.word;
-                row.appendChild(wordCell);
+        // 序号
+        const indexCell = document.createElement('td');
+        indexCell.textContent = index + 1;
+        row.appendChild(indexCell);
 
-                // 状态
-                const statusCell = document.createElement('td');
-                statusCell.textContent = word.status || '未知';
-                row.appendChild(statusCell);
+        // 单词
+        const wordCell = document.createElement('td');
+        wordCell.textContent = word.word;
+        row.appendChild(wordCell);
 
-                // 批改按钮
-                const actionCell = document.createElement('td');
-                const correctButton = document.createElement('button');
-                correctButton.textContent = '正确';
-                correctButton.classList.add('button', 'correct');
-                correctButton.onclick = () => handleReview(index, true);
+        // 状态
+        const statusCell = document.createElement('td');
+        statusCell.textContent = word.status || '未知';
+        row.appendChild(statusCell);
 
-                const incorrectButton = document.createElement('button');
-                incorrectButton.textContent = '错误';
-                incorrectButton.classList.add('button', 'incorrect');
-                incorrectButton.onclick = () => handleReview(index, false);
+        // 批改栏
+        const actionCell = document.createElement('td');
+        const correctButton = document.createElement('button');
+        correctButton.textContent = '正确';
+        correctButton.classList.add('button', 'correct');
+        correctButton.onclick = () => handleReview(index, true, actionCell);
 
-                actionCell.appendChild(correctButton);
-                actionCell.appendChild(incorrectButton);
-                row.appendChild(actionCell);
+        const incorrectButton = document.createElement('button');
+        incorrectButton.textContent = '错误';
+        incorrectButton.classList.add('button', 'incorrect');
+        incorrectButton.onclick = () => handleReview(index, false, actionCell);
 
-                tableBody.appendChild(row);
-            });
-        }
+        actionCell.appendChild(correctButton);
+        actionCell.appendChild(incorrectButton);
+        row.appendChild(actionCell);
 
-        function handleReview(index, isCorrect) {
-            const currentWord = todayWordList[index];
-            const currentTimestamp = new Date().toISOString();
+        tableBody.appendChild(row);
+    });
+}
 
-            // 保存结果
-            const result = {
-                id: currentWord.id,
-                last_exam_id: todayExamId,
-                review_attempt: isCorrect ? (currentWord.review_attempt || 0) + 1 : (currentWord.review_attempt || 0),
-                test_attempts: [...(currentWord.test_attempts || []), { test_result: isCorrect, exam_id: todayExamId, timestamp: currentTimestamp }]
-            };
+function handleReview(index, isCorrect, actionCell) {
+    const currentWord = todayWordList[index];
+    const currentTimestamp = new Date().toISOString();
 
-            // 更新本地结果
-            reviewResults[index] = result;
+    // 保存结果
+    const result = {
+        id: currentWord.id,
+        last_exam_id: todayExamId,
+        review_attempt: isCorrect ? (currentWord.review_attempt || 0) + 1 : (currentWord.review_attempt || 0),
+        test_attempts: [...(currentWord.test_attempts || []), { test_result: isCorrect, exam_id: todayExamId, timestamp: currentTimestamp }]
+    };
 
-            // 禁用按钮防止重复操作
-            const row = document.getElementById('wordTable').rows[index + 1];
-            row.querySelectorAll('button').forEach(button => button.disabled = true);
+    // 更新本地结果
+    reviewResults[index] = result;
 
-            checkCompletion();
-        }
+    // 更新批改栏内容
+    actionCell.innerHTML = `<span>${isCorrect ? '正确' : '错误'}</span>`;
+
+    checkCompletion();
+}
+
 
         function checkCompletion() {
             const allReviewed = reviewResults.length === todayWordList.length && reviewResults.every(r => r);
