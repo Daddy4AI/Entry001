@@ -151,7 +151,7 @@
         }
 
 
-        async function loadWord() {
+async function loadWord() {
     if (currentWordIndex >= todayTestList.length) {
         examData.cnexamList.exam_time_end = new Date().toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
         await saveExamDataToFirebase();
@@ -186,8 +186,7 @@
 
     document.getElementById("progressTitle").textContent = `${currentWordIndex + 1} of ${maxWordN}个单词`;
     document.getElementById("wordDisplay").textContent = "**********";
-    document.getElementById("wordTestProgress").textContent = "测试状态";
-    
+     
     
     playAudio(currentWord.word);
 }
@@ -205,15 +204,13 @@
         }
 
         function loadNextWord() {
-            document.getElementById("nextWordButton").disabled = true;
+            document.getElementById("nextWordButton").disabled = false;
             currentWordIndex++;
             loadWord();
         }
 
         document.getElementById("playSoundButton").addEventListener("click", playCurrentWord);
         document.getElementById("nextWordButton").addEventListener("click", loadNextWord);
-    
-
         window.addEventListener('DOMContentLoaded', initPage);
     </script>
 </body>
