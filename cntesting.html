@@ -102,7 +102,11 @@
 
 async function loadWord() {
     if (currentWordIndex >= todayTestList.length) {
-        examData.cnexamList.exam_time_end = new Date().toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
+        
+        const examTimeEnd = new Date().toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
+        localStorage.setItem('examTimeEnd', examTimeEnd);
+        console.log('Table loaded. Time recorded as:', examTimeEnd);
+
         console.log('所有单词都完成默写');
         alert("完成今天的测试");
         window.location.href = "cngrading.html";

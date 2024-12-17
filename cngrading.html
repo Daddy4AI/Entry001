@@ -181,8 +181,29 @@
 
                 }
                 
-            // 保存测试结果
+            // 保存Exam测试结果
             const examListRef = doc(db, 'cnexamList', todayExamId.toString());
+
+            
+            const todayExamId = parseInt(localStorage.getItem('todayExamId'), 10);
+            const examTimeInitial = localStorage.getItem('examTimeInitial');
+            const examTimeStart = localStorage.getItem('examTimeStart');
+            const examTimeEnd = localStorage.getItem('examTimeEnd');
+            
+            console.log('todayExamId retrieved:', todayExamId);
+            console.log('examTimeInitial retrieved:', examTimeInitial);
+            console.log('examTimeStart retrieved:', examTimeStart);
+            console.log('examTimeEnd retrieved:', examTimeEnd);
+
+            examData.examList = {
+                id: todayExamId,
+                exam_id: todayExamId,
+                exam_time_initial: examTimeInitial,
+                exam_time_start: examTimeStart,
+                exam_time_end: examTimeEnd
+            };
+
+
             await setDoc(examListRef, examData.cnexamList);
 
 
@@ -202,3 +223,5 @@
     </script>
 </body>
 </html>
+
+
