@@ -67,7 +67,6 @@
         let todayTestList = [];
         let currentWordIndex = 0;
         let currentWord = null;
-        let retestCount = 0;
         let examData = {
             cnexamList: {},
             testResults: []
@@ -84,6 +83,7 @@
                     exam_time_start: examTimeStart,
                     exam_time_end: null
                 };
+                console.log(examData.cnexamList)
 
                 document.getElementById('title').textContent = `开始今天的测试，这是第${todayExamId}次测试`;
                 todayTestList = JSON.parse(localStorage.getItem("todayWordList")).slice(0, maxWordN) || [];
