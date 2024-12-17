@@ -78,9 +78,13 @@
                 if (maxWordNDoc.exists()) {
                     maxWordN = maxWordNDoc.data().maxWordN || 25;
                 }
-
                 localStorage.setItem('maxWordN', maxWordN);
 
+                const todayExamId = Math.max(...Object.values(cntestResults).map(r => r.last_exam_id || 0)) + 1;
+                localStorage.setItem('todayExamId', todayExamId);
+
+            // 将 todayExamId 保存到 localStorage
+                
                 console.log('maxWordN saved to localStorage:', localStorage.getItem('maxWordN'));
                 console.log('todayExamId saved to localStorage:', localStorage.getItem('todayExamId'));
 
