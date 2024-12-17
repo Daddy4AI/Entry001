@@ -127,7 +127,6 @@
             const currentWord = todayWordList[index];
             const currentTimestamp = new Date().toISOString();
 
-            // 保存结果
             const result = {
                 id: currentWord.id,
                 last_exam_id: todayExamId,
@@ -179,7 +178,14 @@
                 for (const result of reviewResults) {
                     const wordRef = doc(db, 'cntestResult', result.id.toString());
                     await setDoc(wordRef, result);
+
                 }
+                
+            // 保存测试结果
+            const examListRef = doc(db, 'cnexamList', todayExamId.toString());
+            await setDoc(examListRef, examData.cnexamList);
+
+
                 alert('结果已成功保存！');
                 window.location.href = 'cnresults.html'; // 保存成功后跳转
             } catch (error) {

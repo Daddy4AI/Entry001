@@ -112,6 +112,11 @@
                 row.appendChild(resultCell);
 
                 tableBody.appendChild(row);
+                
+                // 记录表格加载时间
+                const examTimeInitial = new Date().toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
+                localStorage.setItem('examTimeInitial', examTimeInitial);
+
             });
         }
 
