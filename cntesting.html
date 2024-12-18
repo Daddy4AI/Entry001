@@ -76,6 +76,8 @@
             try {
                 console.log('Starting initial setup...');
                 const examTimeStart = new Date().toLocaleString('en-US', { timeZone: 'Asia/Hong_Kong' });
+                localStorage.setItem('examTimeStart', examTimeStart);
+
                 examData.cnexamList = {
                     id: todayExamId,
                     exam_id: todayExamId,
