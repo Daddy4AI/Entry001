@@ -76,14 +76,8 @@
         import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
 
         let todayWordList = JSON.parse(localStorage.getItem("todayWordList")) || [];
-        let reviewResults = []; // 保存批改结果
-        let examData = {
-            cnexamList: {},
-            cntestResults: []
-        };
-
+        let reviewResults = [];
         const todayExamId = parseInt(localStorage.getItem('todayExamId'), 10) || 0;
-
 
         function renderTable() {
             const tableBody = document.getElementById('wordTable').querySelector('tbody');
@@ -184,35 +178,23 @@
                     await setDoc(wordRef, result);
 
                 }
-                
-            // 保存Exam测试结果
-                      
-            const todayExamId = parseInt(localStorage.getItem('todayExamId'), 10);
-            const examTimeInitial = localStorage.getItem('examTimeInitial');
-            const examTimeStart = localStorage.getItem('examTimeStart');
-            const examTimeEnd = localStorage.getItem('examTimeEnd');
-            
-            // const examListRef = doc(db, 'cnexamList', todayExamId.toString());
 
-            console.log('todayExamId retrieved:', todayExamId);
-            console.log('examTimeInitial retrieved:', examTimeInitial);
-            console.log('examTimeStart retrieved:', examTimeStart);
-            console.log('examTimeEnd retrieved:', examTimeEnd);
+                const examTimeInitial = localStorage.getItem('examTimeInitial');
+                const examTimeStart = localStorage.getItem('examTimeStart');
+                const examTimeEnd = new Date().toISOString();
 
-            examData.cnexamList = {
-                id: todayExamId,
-                exam_id: todayExamId,
-                exam_time_initial: examTimeInitial,
-                exam_time_start: examTimeStart,
-                exam_time_end: examTimeEnd
-            };
+                const examListRef = doc(db, 'cnexamList', todayExamId.toString());
+                const examListData = {
+                    id: todayExamId,
+                    exam_time_initial: examTimeInitial,
+                    exam_time_start: examTimeStart,
+                    exam_time_end: examTimeEnd,
+                };
 
-
-            await setDoc(examListRef, examData.cnexamList);
-
+                await setDoc(examListRef, examListData);
 
                 alert('结果已成功保存！');
-                window.location.href = 'cnresults.html'; // 保存成功后跳转
+                window.location.href = 'cnresults.html';
             } catch (error) {
                 console.error('保存结果失败:', error);
                 alert('保存失败，请重试。');
@@ -227,5 +209,3 @@
     </script>
 </body>
 </html>
-
-
