@@ -77,6 +77,10 @@
 
         let todayWordList = JSON.parse(localStorage.getItem("todayWordList")) || [];
         let reviewResults = []; // 保存批改结果
+        let examData = {
+            cnexamList: {},
+            cntestResults: []
+        };
 
         const todayExamId = parseInt(localStorage.getItem('todayExamId'), 10) || 0;
 
